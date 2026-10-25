@@ -1,0 +1,19 @@
+
+{
+  "id": "./",
+  "name": "JEYSON - Living World",
+  "short_name": "JEYSON",
+  "description": "Cuida a Jeyson, juega con él y construye su mundo.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07120f",
+  "theme_color": "#10231d",
+  "lang": "es",
+  "categories": [
+    "games",
+    "entertainment"
+  ],
+  "icons": []
+}
