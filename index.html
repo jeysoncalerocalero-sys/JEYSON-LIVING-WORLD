@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07110d">
+<title>JEYSON — Living World</title>
+<style>
+:root{color-scheme:dark;--bg:#07110d;--panel:#101d16;--line:#244432;--green:#45f59a;--muted:#9ab4a4}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#163625,#07110d 60%);color:#effff5;font-family:system-ui,sans-serif;min-height:100vh;padding:16px;max-width:620px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.logo{font-weight:900;letter-spacing:2px;color:var(--green);font-size:22px}
+.small{color:var(--muted);font-size:12px}
+.panel{background:linear-gradient(145deg,#14251a,#0b1710);border:1px solid var(--line);border-radius:20px;padding:15px;margin-bottom:13px;box-shadow:0 10px 35px #0003}
+.room{height:285px;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(#122b20 0%,#0c1c14 65%,#17291c 66%,#0b1710 100%)}
+.window{position:absolute;top:15px;width:112px;height:92px;border:4px solid #345d46;border-radius:8px;background:linear-gradient(#152e47,#31536a);box-shadow:0 0 30px #45f59a15}
+.window:before,.window:after{content:"";position:absolute;background:#345d46}
+.window:before{width:4px;height:100%;left:50%}
+.window:after{height:4px;width:100%;top:50%}
+.star{position:absolute;top:31px;right:25%;color:#a5ffd0}
+.pet{position:relative;width:130px;height:150px;margin-top:55px;animation:breathe 2.8s ease-in-out infinite;cursor:pointer;z-index:2}
+.head{position:absolute;top:4px;left:15px;width:100px;height:90px;border-radius:46% 46% 43% 43%;background:linear-gradient(145deg,#75ffad,#14a85e);box-shadow:0 0 32px #45f59a30}
+.eye{position:absolute;top:34px;width:17px;height:22px;border-radius:50%;background:#06150c;animation:blink 5s infinite}
+.eye:after{content:"";position:absolute;top:3px;left:4px;width:5px;height:6px;border-radius:50%;background:white}
+.eye.left{left:22px}.eye.right{right:22px}
+.mouth{position:absolute;left:39px;bottom:17px;width:22px;height:10px;border-bottom:3px solid #07351d;border-radius:50%}
+.bodypet{position:absolute;top:82px;left:26px;width:78px;height:65px;border-radius:24px 24px 18px 18px;background:linear-gradient(135deg,#30d879,#087d43);border:2px solid #53f69a}
+.arm{position:absolute;top:93px;width:22px;height:43px;border-radius:15px;background:#19b961;transform-origin:top center}
+.arm.left{left:12px;transform:rotate(15deg)}.arm.right{right:10px;transform:rotate(-15deg)}
+.shadow{position:absolute;bottom:23px;width:145px;height:17px;border-radius:50%;background:#0006;filter:blur(5px)}
+.flooritem{position:absolute;bottom:29px;right:20px;font-size:31px}
+.bubble{position:relative;z-index:3;background:#07150e;border:1px solid #28563a;padding:8px 13px;border-radius:15px;font-size:13px;margin-top:4px;text-align:center}
+@keyframes breathe{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-6px) rotate(1deg)}}
+@keyframes blink{0%,44%,48%,100%{transform:scaleY(1)}46%{transform:scaleY(.08)}}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{font-size:12px;color:var(--muted)}
+.stathead{display:flex;justify-content:space-between;margin-bottom:6px}
+.track{height:8px;background:#07110d;border-radius:20px;overflow:hidden;border:1px solid #213c2b}
+.fill{height:100%;width:75%;background:linear-gradient(90deg,#18a95a,#62ffab);border-radius:20px;transition:width .35s}
+h2{font-size:15px;margin:0 0 11px}
+.buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{border:1px solid #2b5038;background:#14271a;color:#edfff4;border-radius:12px;padding:11px 5px;font:inherit;font-size:12px;cursor:pointer}
+button:active{transform:scale(.96)}
+button.primary{background:var(--green);color:#062112;font-weight:800;border-color:var(--green)}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:13px}
+nav button.active{border-color:var(--green);color:var(--green)}
+#log{font-size:12px;line-height:1.6;color:var(--muted);max-height:100px;overflow:auto}
+footer{text-align:center;color:#779783;font-size:11px;padding:8px}
+</style>
+</head>
+<body>
+<header>
+  <div><div class="logo">♛ JEYSON</div><div class="small">LIVING WORLD · TU COMPAÑERO VIRTUAL</div></div>
+  <div style="text-align:right"><div id="level">NIVEL 1</div><div class="small">🪙 <span id="coins">30</span></div></div>
+</header>
+
+<section class="panel room">
+  <div class="window"></div><div class="star">✦　·　✧</div>
+  <div class="shadow"></div>
+  <div class="pet" id="pet" title="Tócame para saludar">
+    <div class="head"><div class="eye left"></div><div class="eye right"></div><div class="mouth"></div></div>
+    <div class="bodypet"></div><div class="arm left"></div><div class="arm right"></div>
+  </div>
+  <div class="bubble" id="bubble">¡Hola! Me alegra que estés aquí. 💚</div>
+  <div class="flooritem">🪴</div>
+</section>
+
+<section class="panel">
+  <h2>💚 Estado de Jeyson</h2>
+  <div class="stats" id="stats"></div>
+</section>
+
+<nav>
+  <button class="active" data-view="care">🏠 Habitación</button>
+  <button data-view="play">🎮 Actividades</button>
+  <button data-view="about">📖 Progreso</button>
+</nav>
+
+<section class="panel" id="content"></section>
+<section class="panel"><h2>📜 Lo que está pasando</h2><div id="log">Jeyson acaba de llegar a su nuevo hogar.</div></section>
+<footer>JEYSON · Un pequeño mundo que crece contigo</footer>
+
+<script>
+(function(){
+'use strict';
+const $=id=>document.getElementById(id);
+const defaults={hunger:78,energy:85,happiness:82,health:100,affection:55,coins:30,xp:0,level:1,last:Date.now(),log:['Jeyson acaba de llegar a su nuevo hogar.']};
+let s;
+try{s={...defaults,...JSON.parse(localStorage.getItem('jeyson_world_save')||'{}')};}catch(e){s={...defaults};}
+const names={hunger:'🍎 Hambre',energy:'⚡ Energía',happiness:'😊 Ánimo',health:'💚 Salud',affection:'❤️ Cariño'};
+const clamp=n=>Math.max(0,Math.min(100,n));
+function save(){s.last=Date.now();localStorage.setItem('jeyson_world_save',JSON.stringify(s));renderStats();$('coins').textContent=s.coins;$('level').textContent='NIVEL '+s.level;}
+function say(t){$('bubble').textContent=t;addLog(t);}
+function addLog(t){s.log.unshift(t);s.log=s.log.slice(0,8);$('log').innerHTML=s.log.map(x=>'• '+escapeHtml(x)).join('<br>');}
+function escapeHtml(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function xp(n){s.xp+=n;let next=Math.floor(s.xp/100)+1;if(next>s.level){s.level=next;s.coins+=20;say('¡Subí al nivel '+s.level+'! ¡Ganamos 20 monedas! 🎉');}}
+function renderStats(){$('stats').innerHTML=Object.entries(names).map(([k,n])=>`<div class="stat"><div class="stathead"><span>${n}</span><b>${Math.round(s[k])}%</b></div><div class="track"><div class="fill" style="width:${s[k]}%;background:${s[k]<30?'#ff626f':''}"></div></div></div>`).join('');}
+function action(kind){
+ const a={
+ feed:{hunger:22,energy:2,happiness:4,coins:-4,msg:'¡Qué rico! Gracias por alimentarme. 🍎'},
+ sleep:{energy:25,health:3,msg:'Zzz... descansar me hace bien. 💤'},
+ play:{happiness:17,energy:-12,affection:4,msg:'¡Jajaja! ¡Otra partida! 🎮'},
+ hug:{affection:13,happiness:8,msg:'Te mando un abrazo enorme. ❤️'},
+ wash:{health:8,happiness:5,coins:-2,msg:'¡Ahora estoy limpito y feliz! 🫧'},
+ medicine:{health:25,coins:-8,msg:'Gracias por cuidarme cuando me siento mal. 💚'}
+ }[kind];
+ if(!a)return;
+ if((a.coins||0)<0&&s.coins<Math.abs(a.coins)){say('Nos faltan monedas. Juguemos para conseguir más.');return;}
+ Object.entries(a).forEach(([k,v])=>{if(k==='msg')return;if(k==='coins')s.coins+=v;else if(k in s)s[k]=clamp(s[k]+v);});
+ xp(8);say(a.msg);save();renderView('care');
+}
+function renderView(view){
+ const c=$('content');
+ if(view==='care'){c.innerHTML='<h2>🧸 Cuidar a Jeyson</h2><p class="small">Tus decisiones cambian cómo se siente.</p><div class="buttons"><button data-action="feed">🍎 Alimentar<br>4 monedas</button><button data-action="sleep">💤 Descansar</button><button data-action="hug">❤️ Abrazar</button><button data-action="wash">🫧 Bañar<br>2 monedas</button><button data-action="medicine">🩹 Medicina<br>8 monedas</button><button data-action="play">🎲 Jugar</button></div>';}
+ if(view==='play'){c.innerHTML='<h2>🎮 Actividades</h2><p>Gana monedas, mejora el ánimo y desbloquea niveles.</p><div class="buttons"><button id="quiz">🧠 Pregunta rápida</button><button id="coin">🪙 Buscar monedas</button><button id="dance">💃 ¡Bailar!</button></div><p class="small" id="activity"></p>';$('quiz').onclick=quiz;$('coin').onclick=coins;$('dance').onclick=()=>{say('¡Mira mis pasos! 💃✨');$('pet').animate([{transform:'rotate(0) translateY(0)'},{transform:'rotate(-14deg) translateY(-15px)'},{transform:'rotate(14deg) translateY(-5px)'},{transform:'rotate(0) translateY(0)'}],{duration:800,iterations:2});s.happiness=clamp(s.happiness+8);xp(5);save();};}
+ if(view==='about'){c.innerHTML=`<h2>📖 Tu aventura</h2><p>Nivel: <b>${s.level}</b></p><p>Experiencia: <b>${s.xp%100}/100</b></p><p>Monedas: <b>${s.coins}</b></p><p class="small">El progreso se guarda en este dispositivo.</p><button class="primary" id="reset">Reiniciar partida</button>`;$('reset').onclick=()=>{if(confirm('¿Reiniciar todo el progreso?')){localStorage.removeItem('jeyson_world_save');location.reload();}};}
+ c.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>action(b.dataset.action));
+}
+function quiz(){const qs=[['¿Qué necesita una mascota para estar bien?',['Cuidado y alimento','Ignorarla','Nada'],0],['¿Qué ayuda a una amistad?',['Mentiras','Respeto y confianza','Peleas'],1],['¿Qué hacemos tras un error?',['Aprender','Rendirnos','Culpar'],0]];const q=qs[Math.floor(Math.random()*qs.length)];const n=prompt(q[0]+'\n1. '+q[1][0]+'\n2. '+q[1][1]+'\n3. '+q[1][2]+'\n\nEscribe 1, 2 o 3');if(n===null)return;if(Number(n)-1===q[2]){s.coins+=5;xp(10);say('¡Correcto! Ganaste 5 monedas. 🧠');}else say('No pasa nada, aprender también es avanzar. 💚');save();}
+function coins(){const n=3+Math.floor(Math.random()*8);s.coins+=n;xp(6);say('¡Encontré '+n+' monedas! 🪙');save();}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-view]').forEach(x=>x.classList.toggle('active',x===b));renderView(b.dataset.view);});
+$('pet').onclick=()=>{say(['¡Me hiciste cosquillas! 😆','¡Aquí estoy contigo! 💚','¿Jugamos un rato? 🎮'][Math.floor(Math.random()*3)]);$('pet').animate([{transform:'scale(1)'},{transform:'scale(1.12) rotate(-6deg)'},{transform:'scale(1) rotate(6deg)'},{transform:'scale(1)'}],{duration:500});s.affection=clamp(s.affection+2);save();};
+function tick(){const hours=Math.min(12,Math.max(0,(Date.now()-s.last)/3600000));if(hours>0){s.hunger=clamp(s.hunger-hours*2);s.energy=clamp(s.energy-hours);s.happiness=clamp(s.happiness-hours*1.5);if(s.hunger<15||s.energy<10){s.health=clamp(s.health-hours*2);}}if(s.health<=0)say('Estoy muy enfermo... necesito que me cuides. 💔');else if(s.hunger<25)say('Tengo mucha hambre... ¿me ayudas? 🥺');else if(s.happiness<25)say('Me siento solito. ¿Pasamos un rato juntos? 💚');}
+tick();save();renderView('care');setInterval(()=>{s.hunger=clamp(s.hunger-.5);s.energy=clamp(s.energy-.25);if(s.hunger<15)s.health=clamp(s.health-.3);if(s.health===0)say('Estoy muy enfermo. Necesito ayuda. 💔');save();},60000);
+})();
+</script>
+</body>
+</html>
