@@ -4,115 +4,112 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10231d">
-  <meta name="description" content="Cuida a Jeyson en su mundo virtual.">
+  <meta name="theme-color" content="#101b19">
+  <meta name="description" content="JEYSON Living World, tu compañero virtual 3D">
   <title>JEYSON — Living World</title>
-
   <link rel="stylesheet" href="./style.css">
-  <link rel="manifest" href="./manifest.json">
 </head>
 <body>
   <main class="app">
     <header class="topbar">
       <div>
-        <div class="logo">JEYSON</div>
-        <div class="subtitle">LIVING WORLD · TU PEQUEÑO MUNDO</div>
+        <p class="eyebrow">TU COMPAÑERO VIRTUAL</p>
+        <h1>JEYSON <span>✦</span></h1>
       </div>
-      <div class="coins">🪙 <span id="coins">100</span></div>
+      <div class="level-chip">
+        NIVEL <strong id="level">1</strong>
+      </div>
     </header>
 
-    <section class="panel">
-      <div class="row-between">
-        <div>
-          <h1 class="section-title">Tu compañero</h1>
-          <div class="muted">Nivel <span id="level">1</span> · XP <span id="xp">0/100</span></div>
-        </div>
-        <button id="reset-game" type="button">Reiniciar</button>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="live-dot"></span>
+        <span id="mood-label">ESPERÁNDOTE</span>
+        <h2 id="greeting">¡Hey! Qué bueno verte.</h2>
+        <p id="mood-text">Toca el personaje, muévelo y descubre cómo evoluciona.</p>
       </div>
 
-      <div class="pet-room">
-        <div class="window"><div class="moon"></div></div>
-        <div class="pet" id="pet" aria-label="Jeyson, tu mascota">🐻</div>
-        <div class="pet-name" id="pet-name">Jeyson</div>
-        <div class="pet-message" id="pet-message">¡Estoy feliz de estar contigo! 💚</div>
+      <div class="stage">
+        <div class="stage-glow"></div>
+        <div id="scene" aria-label="Personaje humano tridimensional de JEYSON"></div>
+        <div class="stage-tip">ARRASTRA PARA GIRAR · TOCA PARA INTERACTUAR</div>
+        <div class="stage-controls">
+          <button id="rotate-btn" aria-label="Girar personaje">⟳ Girar</button>
+          <button id="dance-btn">✦ Bailar</button>
+        </div>
       </div>
-    </section>
 
-    <section class="panel">
-      <h2 class="section-title">💚 ¿Cómo se siente?</h2>
-      <div class="stats">
-        <div>
-          <div class="stat-label"><span>🍎 Hambre</span><span id="hunger-value">85%</span></div>
-          <div class="meter"><div class="meter-fill" id="hunger-bar"></div></div>
+      <div class="xp-panel">
+        <div class="xp-label">
+          <span>PROGRESO DE EVOLUCIÓN</span>
+          <strong id="xp-label">0 / 100 XP</strong>
         </div>
-        <div>
-          <div class="stat-label"><span>⚡ Energía</span><span id="energy-value">90%</span></div>
-          <div class="meter"><div class="meter-fill" id="energy-bar"></div></div>
-        </div>
-        <div>
-          <div class="stat-label"><span>😊 Felicidad</span><span id="happiness-value">90%</span></div>
-          <div class="meter"><div class="meter-fill" id="happiness-bar"></div></div>
-        </div>
-        <div>
-          <div class="stat-label"><span>❤️ Salud</span><span id="health-value">100%</span></div>
-          <div class="meter"><div class="meter-fill" id="health-bar"></div></div>
-        </div>
-        <div>
-          <div class="stat-label"><span>🤗 Afecto</span><span id="affection-value">50%</span></div>
-          <div class="meter"><div class="meter-fill" id="affection-bar"></div></div>
-        </div>
+        <div class="xp-track"><div id="xp-bar"></div></div>
+        <p id="evolution-label">Etapa 1 · El comienzo</p>
       </div>
     </section>
 
-    <section class="panel" data-page="home">
-      <h2 class="section-title">✨ Cuida de Jeyson</h2>
-      <div class="actions">
-        <button class="action-button" data-action="feed"><span>🍎</span><span>Alimentar</span></button>
-        <button class="action-button" data-action="sleep"><span>💤</span><span>Descansar</span></button>
-        <button class="action-button" data-action="hug"><span>🤗</span><span>Abrazar</span></button>
-        <button class="action-button" data-action="wash"><span>🫧</span><span>Bañar</span></button>
-        <button class="action-button" data-action="medicine"><span>🩺</span><span>Medicina</span></button>
-        <button class="action-button" data-action="play"><span>🎾</span><span>Jugar</span></button>
-      </div>
-      <div class="message hidden" id="message" role="status" aria-live="polite"></div>
-    </section>
-
-    <section class="panel" data-page="activities">
-      <h2 class="section-title">🎮 Actividades</h2>
-      <p class="muted">Completa actividades para ganar monedas y experiencia.</p>
-      <div class="activities">
-        <button class="action-button" data-activity="quiz"><span>🧠</span><span>Preguntas</span></button>
-        <button class="action-button" data-activity="treasure"><span>💰</span><span>Tesoro</span></button>
-        <button class="action-button" data-activity="dance"><span>💃</span><span>Baile</span></button>
-      </div>
-    </section>
-
-    <section class="panel hidden" data-page="progress">
-      <h2 class="section-title">🏆 Tu progreso</h2>
-      <div class="progress-line"><span>Nivel actual</span><strong id="progress-level">1</strong></div>
-      <div class="progress-line"><span>Experiencia acumulada en el nivel</span><strong id="progress-xp">0</strong></div>
-      <div class="progress-line"><span>Vínculo con Jeyson</span><strong id="progress-affection">50%</strong></div>
-      <p class="muted">Tu progreso se guarda en este navegador. Si borras sus datos, podrías perder la partida.</p>
-    </section>
-
-    <nav class="panel navigation" aria-label="Menú principal">
-      <button data-tab="home" class="active">🏡 Inicio</button>
-      <button data-tab="activities">🎮 Actividades</button>
-      <button data-tab="progress">🏆 Progreso</button>
+    <nav class="tabs">
+      <button class="tab active" data-page="home">⌂ <span>Inicio</span></button>
+      <button class="tab" data-page="chat">♡ <span>Conversar</span></button>
+      <button class="tab" data-page="care">✧ <span>Cuidarlo</span></button>
     </nav>
 
-    <footer class="footer">JEYSON — LIVING WORLD · Una aventura que crece contigo 💚</footer>
-  </main>
+    <section class="page" id="home-page">
+      <div class="section-heading">
+        <div><p class="eyebrow">SU MUNDO</p><h2>¿Qué hacemos hoy?</h2></div>
+        <div class="coin-chip">◈ <strong id="coins">100</strong></div>
+      </div>
+      <div class="quick-grid">
+        <button class="quick-card" data-action="hug"><span>♡</span><strong>Abrazar</strong><small>Hazlo sentir querido</small></button>
+        <button class="quick-card" data-action="play"><span>✦</span><strong>Jugar</strong><small>Sube su experiencia</small></button>
+        <button class="quick-card" data-action="talk"><span>☏</span><strong>Hablar</strong><small>Cuéntale algo</small></button>
+        <button class="quick-card" data-action="sleep"><span>☾</span><strong>Descansar</strong><small>Recupera energía</small></button>
+      </div>
 
-  <script src="./script.js"></script>
-  <script>
-    if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(error => {
-          console.warn("No se pudo activar el modo sin conexión.", error);
-        });
-      });
-    }
-  </script>
+      <div class="section-heading">
+        <div><p class="eyebrow">SU ESTADO</p><h2>¿Cómo se siente?</h2></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>😊 Felicidad</span><strong id="happiness-value">90%</strong><div class="meter"><div id="happiness-bar"></div></div></div>
+        <div class="stat"><span>⚡ Energía</span><strong id="energy-value">90%</strong><div class="meter"><div id="energy-bar"></div></div></div>
+        <div class="stat"><span>♡ Cariño</span><strong id="affection-value">50%</strong><div class="meter"><div id="affection-bar"></div></div></div>
+      </div>
+    </section>
+
+    <section class="page hidden" id="chat-page">
+      <div class="chat-heading">
+        <div class="avatar-mini">J</div>
+        <div><p class="eyebrow">CONVERSACIÓN PERSONAL</p><h2>Habla conmigo</h2><p id="chat-status">Tu compañero te escucha.</p></div>
+      </div>
+      <div class="chat-notice">JEYSON está diseñado para conversar con respeto y sinceridad. La IA real requiere conectar un servidor seguro; no compartas contraseñas ni datos privados.</div>
+      <div id="chat-messages" class="chat-messages" aria-live="polite">
+        <div class="bubble bot">¡Ey! 💚 Aquí estoy. Cuéntame qué tienes en mente.</div>
+      </div>
+      <form id="chat-form" class="chat-form">
+        <textarea id="chat-input" rows="2" maxlength="4000" placeholder="Escribe lo que quieras conversar..." aria-label="Tu mensaje"></textarea>
+        <button type="submit" id="send-btn">Enviar ↗</button>
+      </form>
+      <p class="chat-footnote">Mensajes de hasta 4.000 caracteres. La respuesta de IA aparecerá cuando configures el servidor.</p>
+    </section>
+
+    <section class="page hidden" id="care-page">
+      <p class="eyebrow">CUIDAR TAMBIÉN ES QUERER</p>
+      <h2>Cuida de JEYSON</h2>
+      <div class="care-list">
+        <button class="care-item" data-action="feed"><span>🍜</span><div><strong>Darle de comer</strong><small>Recupera felicidad y energía</small></div><b>−5 ◈</b></button>
+        <button class="care-item" data-action="hug"><span>🫶</span><div><strong>Darle un abrazo</strong><small>Refuerza el vínculo</small></div><b>Gratis</b></button>
+        <button class="care-item" data-action="wash"><span>🚿</span><div><strong>Ayudarlo a asearse</strong><small>Un personaje cuidado se siente mejor</small></div><b>Gratis</b></button>
+        <button class="care-item" data-action="sleep"><span>🛌</span><div><strong>Dejarlo descansar</strong><small>Recupera energía</small></div><b>Gratis</b></button>
+      </div>
+      <div class="section-heading"><div><p class="eyebrow">TU PROGRESO</p><h2>Su evolución</h2></div></div>
+      <div class="evolution-card"><span>✧</span><div><strong id="stage-name">El comienzo</strong><p id="stage-description">Cada nivel desbloquea una nueva etapa.</p></div></div>
+      <button class="reset-btn" id="reset-btn">Reiniciar progreso</button>
+    </section>
+
+    <footer>HECHO PARA CRECER CONTIGO <span>♥</span></footer>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </main>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
