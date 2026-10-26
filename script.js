@@ -286,3 +286,27 @@ function initializeJeysonLocalChat() {
 
 initializeJeysonLocalChat();
 loadJeysonDatabase();
+
+/* REPARACIÓN DE NAVEGACIÓN DE JEYSON */
+
+document.querySelectorAll(".tab[data-page]").forEach(button => {
+  button.addEventListener("click", () => {
+    const page = button.dataset.page;
+
+    document.querySelectorAll(".page").forEach(section => {
+      section.classList.toggle(
+        "hidden",
+        section.id !== page + "-page"
+      );
+    });
+
+    document.querySelectorAll(".tab[data-page]").forEach(tab => {
+      tab.classList.toggle("active", tab === button);
+    });
+
+    if (page === "chat") {
+      const input = document.getElementById("chat-input");
+      if (input) input.focus();
+    }
+  });
+});
