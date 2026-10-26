@@ -1,46 +1,49 @@
 
 /* =========================================================
    CHAT LOCAL DE JEYSON LIVING WORLD
-   Mantiene intactas las funciones anteriores del juego.
-   Requiere respuestas.json en la misma carpeta.
+   Compatible con la navegación existente.
+   Requiere respuestas.json junto a script.js.
    ========================================================= */
 
 let jeysonDatabase = null;
 const jeysonUsedAnswers = new Set();
 const JEYSON_PARABLE_KEY = "jeyson_ultima_parabola";
 
-async function loadJeysonDatabase() {
+/* Cargar base de respuestas */
+async function jeysonLoadDatabase() {
+  const status = document.getElementById("chat-status");
+
   try {
     const response = await fetch("./respuestas.json", {
       cache: "no-store"
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo cargar respuestas.json");
+      throw new Error("HTTP " + response.status);
     }
 
     const data = await response.json();
 
     if (!data || !data.categorias) {
-      throw new Error("La base de respuestas no es válida");
+      throw new Error("Formato de respuestas.json incorrecto");
     }
 
     jeysonDatabase = data;
 
-    if ($("chat-status")) {
-      $("chat-status").textContent =
-        "JEYSON está listo para conversar 💚";
+    if (status) {
+      status.textContent = "Modo local listo. ¡Hablemos! 💚";
     }
   } catch (error) {
-    console.error("Error cargando respuestas.json:", error);
+    console.error("JEYSON: error cargando respuestas.json", error);
 
-    if ($("chat-status")) {
-      $("chat-status").textContent =
-        "No se pudo cargar respuestas.json. Comprueba que esté publicado.";
+    if (status) {
+      status.textContent =
+        "No pude cargar respuestas.json. Comprueba que exista en GitHub.";
     }
   }
 }
 
+/* Normalizar texto */
 function jeysonNormalize(text) {
   return String(text || "")
     .toLowerCase()
@@ -49,8 +52,9 @@ function jeysonNormalize(text) {
     .trim();
 }
 
+/* Elegir respuestas sin repetir hasta agotar la categoría */
 function jeysonChooseAnswer(list, category) {
-  if (!Array.isArray(list) || !list.length) return null;
+  if (!Array.isArray(list) || list.length === 0) return null;
 
   let available = list
     .map((text, index) => ({ text, index }))
@@ -60,10 +64,10 @@ function jeysonChooseAnswer(list, category) {
       !jeysonUsedAnswers.has(category + ":" + item.index)
     );
 
-  if (!available.length) {
-    list.forEach((_, index) =>
-      jeysonUsedAnswers.delete(category + ":" + index)
-    );
+  if (available.length === 0) {
+    list.forEach((_, index) => {
+      jeysonUsedAnswers.delete(category + ":" + index);
+    });
 
     available = list
       .map((text, index) => ({ text, index }))
@@ -72,20 +76,21 @@ function jeysonChooseAnswer(list, category) {
       );
   }
 
-  if (!available.length) return null;
+  if (available.length === 0) return null;
 
-  const chosen =
+  const selected =
     available[Math.floor(Math.random() * available.length)];
 
-  jeysonUsedAnswers.add(category + ":" + chosen.index);
-  return chosen.text;
+  jeysonUsedAnswers.add(category + ":" + selected.index);
+  return selected.text;
 }
 
+/* Una parábola como máximo al día en este navegador */
 function jeysonGetParable() {
-  const list = jeysonDatabase?.parabolas;
+  const list = jeysonDatabase && jeysonDatabase.parabolas;
 
-  if (!Array.isArray(list) || !list.length) {
-    return "Todavía estoy preparando más parábolas. 💚";
+  if (!Array.isArray(list) || list.length === 0) {
+    return "Todavía estoy preparando mis parábolas. 💚";
   }
 
   const now = new Date();
@@ -97,8 +102,8 @@ function jeysonGetParable() {
 
   try {
     if (localStorage.getItem(JEYSON_PARABLE_KEY) === today) {
-      return "Hoy ya te conté una parábola. 📖 Mañana habrá otra. " +
-        "Mientras tanto, podemos conversar de lo que quieras. 💚";
+      return "Hoy ya compartí contigo una parábola. 📖 Mañana habrá otra. " +
+        "Mientras tanto, podemos hablar de lo que quieras. 💚";
     }
   } catch (error) {
     console.warn("No se pudo consultar el límite diario.");
@@ -118,14 +123,12 @@ function jeysonGetParable() {
     "\n\n" + (item.texto || item.contenido || "");
 }
 
+/* Detectar el tema del mensaje */
 function jeysonDetectCategory(message) {
   const t = jeysonNormalize(message);
 
   if (/\b(parabola|parabolas|historia con moraleja)\b/.test(t))
     return "parabolas";
-
-  if (/\b(gustos|que sabes de mi|que me gusta|como soy)\b/.test(t))
-    return "gustos_del_usuario";
 
   if (/\b(sexo|sexual|erotico|picante|deseo|intimidad|doble sentido)\b/.test(t))
     return "temas_picantes_adultos";
@@ -160,6 +163,7 @@ function jeysonDetectCategory(message) {
   return null;
 }
 
+/* Respuestas sobre gustos que el usuario compartió */
 function jeysonPersonalReply(message) {
   const t = jeysonNormalize(message);
 
@@ -183,10 +187,10 @@ function jeysonPersonalReply(message) {
   return null;
 }
 
+/* Preparar respuesta local */
 function jeysonLocalReply(message) {
   if (!jeysonDatabase) {
-    return "Todavía estoy cargando mis respuestas. 💚 " +
-      "Espera un momento y vuelve a escribirme.";
+    return "Todavía estoy cargando mis respuestas. 💚 Espera un momento y vuelve a escribirme.";
   }
 
   const personal = jeysonPersonalReply(message);
@@ -196,10 +200,6 @@ function jeysonLocalReply(message) {
 
   if (category === "parabolas") {
     return jeysonGetParable();
-  }
-
-  if (category === "gustos_del_usuario") {
-    return "Todavía estoy aprendiendo más sobre tus gustos. 💚";
   }
 
   if (category) {
@@ -224,12 +224,14 @@ function jeysonLocalReply(message) {
   return jeysonChooseAnswer(
     jeysonDatabase.respuestas_de_apoyo,
     "apoyo"
-  ) || jeysonDatabase.fallback?.respuesta ||
+  ) || (jeysonDatabase.fallback &&
+    jeysonDatabase.fallback.respuesta) ||
     "Te escucho. 💚 Cuéntame un poco más para entenderte.";
 }
 
-function addBubble(text, who) {
-  const messages = $("chat-messages");
+/* Crear burbujas sin duplicar nombres del código anterior */
+function jeysonAddBubble(text, who) {
+  const messages = document.getElementById("chat-messages");
   if (!messages) return;
 
   const bubble = document.createElement("div");
@@ -241,41 +243,42 @@ function addBubble(text, who) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-function initializeJeysonLocalChat() {
-  const form = $("chat-form");
+/* Activar el chat */
+function jeysonInitializeLocalChat() {
+  const form = document.getElementById("chat-form");
 
-  if (!form || form.dataset.localChatReady === "true") return;
+  if (!form || form.dataset.jeysonLocalReady === "true") return;
 
-  form.dataset.localChatReady = "true";
+  form.dataset.jeysonLocalReady = "true";
 
   form.addEventListener("submit", event => {
     event.preventDefault();
 
-    const input = $("chat-input");
-    const button = $("send-btn");
+    const input = document.getElementById("chat-input");
+    const button = document.getElementById("send-btn");
+    const status = document.getElementById("chat-status");
 
     if (!input) return;
 
     const message = input.value.trim();
     if (!message) return;
 
-    addBubble(message, "user");
+    jeysonAddBubble(message, "user");
     input.value = "";
 
     if (button) button.disabled = true;
 
     try {
-      addBubble(jeysonLocalReply(message), "bot");
+      jeysonAddBubble(jeysonLocalReply(message), "bot");
 
-      if ($("chat-status")) {
-        $("chat-status").textContent =
-          "Modo local activo · JEYSON está conversando 💚";
+      if (status) {
+        status.textContent = "Modo local activo · JEYSON conversa contigo 💚";
       }
     } catch (error) {
-      console.error("Error en el chat local:", error);
+      console.error("Error en el chat de JEYSON:", error);
 
-      addBubble(
-        "Tuve un problema al preparar la respuesta. Inténtalo otra vez. 💚",
+      jeysonAddBubble(
+        "Tuve un problema preparando la respuesta. Inténtalo otra vez. 💚",
         "bot"
       );
     } finally {
@@ -284,20 +287,21 @@ function initializeJeysonLocalChat() {
   });
 }
 
-initializeJeysonLocalChat();
-loadJeysonDatabase();
+/* Iniciar sin reemplazar las funciones originales del juego */
+jeysonInitializeLocalChat();
+jeysonLoadDatabase();
 
-/* REPARACIÓN DE NAVEGACIÓN DE JEYSON */
-
+/* Navegación: evita registrar el mismo manejador dos veces */
 document.querySelectorAll(".tab[data-page]").forEach(button => {
+  if (button.dataset.jeysonNavigationReady === "true") return;
+
+  button.dataset.jeysonNavigationReady = "true";
+
   button.addEventListener("click", () => {
     const page = button.dataset.page;
 
     document.querySelectorAll(".page").forEach(section => {
-      section.classList.toggle(
-        "hidden",
-        section.id !== page + "-page"
-      );
+      section.classList.toggle("hidden", section.id !== page + "-page");
     });
 
     document.querySelectorAll(".tab[data-page]").forEach(tab => {
