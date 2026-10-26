@@ -1,53 +1,47 @@
 
 /* =========================================================
-   JEYSON LIVING WORLD — CHAT LOCAL
-   Compatible con GitHub Pages y respuestas.json
+   CHAT LOCAL DE JEYSON LIVING WORLD
+   Mantiene intactas las funciones anteriores del juego.
+   Requiere respuestas.json en la misma carpeta.
    ========================================================= */
 
-const $ = (id) => document.getElementById(id);
-
 let jeysonDatabase = null;
-const usedAnswers = new Set();
-const PARABLE_KEY = "jeyson_ultima_parabola";
-
-/* ---------- CARGAR BASE DE RESPUESTAS ---------- */
+const jeysonUsedAnswers = new Set();
+const JEYSON_PARABLE_KEY = "jeyson_ultima_parabola";
 
 async function loadJeysonDatabase() {
-  const status = $("chat-status");
-
   try {
     const response = await fetch("./respuestas.json", {
       cache: "no-store"
     });
 
     if (!response.ok) {
-      throw new Error("No se encontró respuestas.json");
+      throw new Error("No se pudo cargar respuestas.json");
     }
 
     const data = await response.json();
 
     if (!data || !data.categorias) {
-      throw new Error("La estructura del archivo JSON no es válida");
+      throw new Error("La base de respuestas no es válida");
     }
 
     jeysonDatabase = data;
 
-    if (status) {
-      status.textContent = "JEYSON está listo para conversar 💚";
+    if ($("chat-status")) {
+      $("chat-status").textContent =
+        "JEYSON está listo para conversar 💚";
     }
   } catch (error) {
-    console.error("Error al cargar respuestas.json:", error);
+    console.error("Error cargando respuestas.json:", error);
 
-    if (status) {
-      status.textContent =
-        "No pude cargar respuestas.json. Comprueba que esté publicado.";
+    if ($("chat-status")) {
+      $("chat-status").textContent =
+        "No se pudo cargar respuestas.json. Comprueba que esté publicado.";
     }
   }
 }
 
-/* ---------- UTILIDADES ---------- */
-
-function normalizeText(text) {
+function jeysonNormalize(text) {
   return String(text || "")
     .toLowerCase()
     .normalize("NFD")
@@ -55,22 +49,20 @@ function normalizeText(text) {
     .trim();
 }
 
-function chooseAnswer(list, category = "general") {
-  if (!Array.isArray(list) || list.length === 0) {
-    return null;
-  }
+function jeysonChooseAnswer(list, category) {
+  if (!Array.isArray(list) || !list.length) return null;
 
   let available = list
     .map((text, index) => ({ text, index }))
     .filter(item =>
       typeof item.text === "string" &&
       item.text.trim() &&
-      !usedAnswers.has(category + ":" + item.index)
+      !jeysonUsedAnswers.has(category + ":" + item.index)
     );
 
-  if (available.length === 0) {
+  if (!available.length) {
     list.forEach((_, index) =>
-      usedAnswers.delete(category + ":" + index)
+      jeysonUsedAnswers.delete(category + ":" + index)
     );
 
     available = list
@@ -82,248 +74,165 @@ function chooseAnswer(list, category = "general") {
 
   if (!available.length) return null;
 
-  const selected =
+  const chosen =
     available[Math.floor(Math.random() * available.length)];
 
-  usedAnswers.add(category + ":" + selected.index);
-
-  return selected.text;
+  jeysonUsedAnswers.add(category + ":" + chosen.index);
+  return chosen.text;
 }
 
-/* ---------- PARÁBOLAS: UNA POR DÍA ---------- */
+function jeysonGetParable() {
+  const list = jeysonDatabase?.parabolas;
 
-function getLocalDateKey() {
+  if (!Array.isArray(list) || !list.length) {
+    return "Todavía estoy preparando más parábolas. 💚";
+  }
+
   const now = new Date();
-
-  return [
+  const today = [
     now.getFullYear(),
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0")
   ].join("-");
-}
-
-function getParable() {
-  const list = jeysonDatabase?.parabolas;
-
-  if (!Array.isArray(list) || list.length === 0) {
-    return "Todavía estoy preparando más parábolas. 💚";
-  }
-
-  const today = getLocalDateKey();
-  let lastDate = "";
 
   try {
-    lastDate = localStorage.getItem(PARABLE_KEY) || "";
+    if (localStorage.getItem(JEYSON_PARABLE_KEY) === today) {
+      return "Hoy ya te conté una parábola. 📖 Mañana habrá otra. " +
+        "Mientras tanto, podemos conversar de lo que quieras. 💚";
+    }
   } catch (error) {
-    console.warn("No se pudo consultar el almacenamiento local.");
-  }
-
-  if (lastDate === today) {
-    return (
-      "📖 Hoy ya compartí contigo una parábola. " +
-      "Mañana podemos descubrir otra. 💚\n\n" +
-      "Mientras tanto, dime qué te preocupa y lo hablamos."
-    );
+    console.warn("No se pudo consultar el límite diario.");
   }
 
   const item = list[Math.floor(Math.random() * list.length)];
 
   try {
-    localStorage.setItem(PARABLE_KEY, today);
+    localStorage.setItem(JEYSON_PARABLE_KEY, today);
   } catch (error) {
     console.warn("No se pudo guardar el límite diario.");
   }
 
-  if (typeof item === "string") {
-    return "📖 " + item;
-  }
+  if (typeof item === "string") return "📖 " + item;
 
   return "📖 " + (item.titulo || "Una enseñanza para la vida") +
     "\n\n" + (item.texto || item.contenido || "");
 }
 
-/* ---------- GUSTOS PERSONALES ---------- */
+function jeysonDetectCategory(message) {
+  const t = jeysonNormalize(message);
 
-function getPersonalTasteReply(message) {
-  const text = normalizeText(message);
+  if (/\b(parabola|parabolas|historia con moraleja)\b/.test(t))
+    return "parabolas";
 
-  if (
-    text.includes("que sabes de mi") ||
-    text.includes("como soy") ||
-    text.includes("mis gustos") ||
-    text.includes("que me gusta")
-  ) {
-    return (
-      "Por lo que me has contado, te gustan las canciones románticas " +
-      "y melancólicas, las letras sinceras y los sonidos suaves y " +
-      "relajados. También te gusta cuidar tu apariencia, vestir bien, " +
-      "oler bien y llevar accesorios con estilo. Prefieres que te " +
-      "hablen de tú y de forma natural, sin frases demasiado cursis. 💚"
-    );
+  if (/\b(gustos|que sabes de mi|que me gusta|como soy)\b/.test(t))
+    return "gustos_del_usuario";
+
+  if (/\b(sexo|sexual|erotico|picante|deseo|intimidad|doble sentido)\b/.test(t))
+    return "temas_picantes_adultos";
+
+  if (/\b(enojado|enojada|rabia|furioso|furiosa|enfado|estoy harto|estoy harta)\b/.test(t))
+    return "enojo";
+
+  if (/\b(desamor|ruptura|mi ex|corazon roto|terminamos|me dejo|infidelidad)\b/.test(t))
+    return "desamor";
+
+  if (/\b(triste|tristeza|soledad|solo|sola|llorar|deprimido|deprimida|vacio|me siento mal)\b/.test(t))
+    return "tristeza";
+
+  if (/\b(consejo|que hago|que debo hacer|ayudame|necesito ayuda|no se que hacer)\b/.test(t))
+    return "consejos";
+
+  if (/\b(amigo|amiga|amistad|confianza|traicion)\b/.test(t))
+    return "amistad";
+
+  if (/\b(autoestima|no valgo|no sirvo|no soy suficiente)\b/.test(t))
+    return "autoestima";
+
+  if (/\b(vida|futuro|empezar de nuevo|superarme|motivacion)\b/.test(t))
+    return "vida";
+
+  if (/\b(coqueteo|ligar|conquistar|piropos|seductor)\b/.test(t))
+    return "coqueteo";
+
+  if (/\b(amor|enamorado|enamorada|novia|novio|pareja|te amo|te quiero|romantico|romantica|beso)\b/.test(t))
+    return "amor";
+
+  return null;
+}
+
+function jeysonPersonalReply(message) {
+  const t = jeysonNormalize(message);
+
+  if (/\b(gustos|que sabes de mi|que me gusta|como soy)\b/.test(t)) {
+    return "Por lo que me has contado, te gustan las canciones románticas " +
+      "y melancólicas, las letras sinceras y los sonidos suaves. También " +
+      "te gusta cuidar tu estilo, vestir bien y oler bien. Prefieres " +
+      "conversaciones naturales y sinceras. 💚";
   }
 
-  if (
-    text.includes("musica") ||
-    text.includes("canciones") ||
-    text.includes("cantantes") ||
-    text.includes("playlist")
-  ) {
-    return (
-      "Por lo que me has contado, te atraen las canciones románticas, " +
-      "tristes y sinceras, con voces emotivas y sonidos suaves. " +
-      "También te gustan las melodías relajadas y elegantes. 🎧"
-    );
+  if (/\b(musica|canciones|cantantes|playlist)\b/.test(t)) {
+    return "Te gustan las canciones románticas y tristes, las voces " +
+      "emotivas y las melodías suaves y relajadas. 🎧";
   }
 
-  if (
-    text.includes("ropa") ||
-    text.includes("vestir") ||
-    text.includes("estilo") ||
-    text.includes("perfume") ||
-    text.includes("prendas") ||
-    text.includes("accesorios")
-  ) {
-    return (
-      "Te gusta cuidar tu estilo, vestir bien, oler bien y usar " +
-      "prendas y accesorios que te hagan sentir elegante. ✨"
-    );
+  if (/\b(ropa|vestir|estilo|perfume|oler bien|accesorios)\b/.test(t)) {
+    return "Te gusta cuidar tu apariencia, vestir bien, oler bien y " +
+      "llevar accesorios que combinen con tu estilo. ✨";
   }
 
   return null;
 }
 
-/* ---------- DETECTAR EL TEMA ---------- */
-
-function detectCategory(message) {
-  const text = normalizeText(message);
-
-  if (
-    /\b(parabola|parabolas|historia con moraleja|ensenanza con historia)\b/.test(text)
-  ) return "parabolas";
-
-  if (
-    /\b(sexo|sexual|erotico|picante|caliente|deseo|intimidad|seducir|doble sentido)\b/.test(text)
-  ) return "temas_picantes_adultos";
-
-  if (
-    /\b(enojado|enojada|rabia|furioso|furiosa|me molesta|odio|ira|enfado|estoy harto|estoy harta)\b/.test(text)
-  ) return "enojo";
-
-  if (
-    /\b(desamor|ruptura|me dejo|me abandono|mi ex|corazon roto|terminamos|olvidarla|olvidarlo|me fue infiel)\b/.test(text)
-  ) return "desamor";
-
-  if (
-    /\b(triste|tristeza|solo|sola|soledad|llorar|deprimido|deprimida|dolor|vacio|perdi a alguien|me siento mal|estoy mal)\b/.test(text)
-  ) return "tristeza";
-
-  if (
-    /\b(consejo|que hago|que debo hacer|ayudame|necesito ayuda|recomiendame|no se que hacer)\b/.test(text)
-  ) return "consejos";
-
-  if (
-    /\b(amigo|amiga|amistad|amistades|confianza|me traicionaron)\b/.test(text)
-  ) return "amistad";
-
-  if (
-    /\b(autoestima|no valgo|no sirvo|me siento insuficiente|me odio a mi mismo|no soy suficiente)\b/.test(text)
-  ) return "autoestima";
-
-  if (
-    /\b(vida|futuro|cambiar mi vida|empezar de nuevo|superarme|motivacion)\b/.test(text)
-  ) return "vida";
-
-  if (
-    /\b(coquetea|coqueteo|ligar|conquistar|piropos|piropear|seductor)\b/.test(text)
-  ) return "coqueteo";
-
-  if (
-    /\b(amor|enamorado|enamorada|novia|novio|pareja|te amo|te quiero|romantico|romantica|beso|abrazame)\b/.test(text)
-  ) return "amor";
-
-  return null;
-}
-
-/* ---------- RESPUESTAS DE APOYO ---------- */
-
-function getSupportReply(message) {
-  const text = normalizeText(message);
-
-  if (/\b(hola|buenas|hey|holi|que tal)\b/.test(text)) {
-    return "¡Aquí estoy! 💚 Cuéntame, ¿cómo te ha ido hoy?";
-  }
-
-  if (/\b(gracias|te agradezco|muchas gracias)\b/.test(text)) {
-    return "No tienes que agradecerme. 💚 Me alegra poder acompañarte.";
-  }
-
-  if (/\b(te quiero|te amo)\b/.test(text)) {
-    return "Qué bonito que me lo digas. 💚 Estoy aquí para escucharte y conversar contigo.";
-  }
-
-  if (/\b(adios|hasta luego|me voy|nos vemos)\b/.test(text)) {
-    return "Cuídate mucho. 💚 Cuando quieras volver a conversar, aquí tendrás un espacio para expresarte.";
-  }
-
-  return null;
-}
-
-/* ---------- CREAR RESPUESTA LOCAL ---------- */
-
-function getLocalReply(message) {
+function jeysonLocalReply(message) {
   if (!jeysonDatabase) {
-    return (
-      "Todavía estoy cargando mis respuestas. 💚 " +
-      "Espera un momento y vuelve a escribirme."
-    );
+    return "Todavía estoy cargando mis respuestas. 💚 " +
+      "Espera un momento y vuelve a escribirme.";
   }
 
-  const personalReply = getPersonalTasteReply(message);
+  const personal = jeysonPersonalReply(message);
+  if (personal) return personal;
 
-  if (personalReply) return personalReply;
-
-  const category = detectCategory(message);
+  const category = jeysonDetectCategory(message);
 
   if (category === "parabolas") {
-    return getParable();
+    return jeysonGetParable();
+  }
+
+  if (category === "gustos_del_usuario") {
+    return "Todavía estoy aprendiendo más sobre tus gustos. 💚";
   }
 
   if (category) {
-    const list = jeysonDatabase.categorias[category];
+    const answer = jeysonChooseAnswer(
+      jeysonDatabase.categorias[category],
+      category
+    );
 
-    if (Array.isArray(list)) {
-      const answer = chooseAnswer(list, category);
-
-      if (answer) return answer;
-    }
+    if (answer) return answer;
   }
 
-  const supportReply = getSupportReply(message);
+  const t = jeysonNormalize(message);
 
-  if (supportReply) return supportReply;
+  if (/\b(hola|buenas|hey|holi)\b/.test(t)) {
+    return "¡Hola! 💚 Qué bueno tenerte aquí. ¿Cómo te ha ido hoy?";
+  }
 
-  const support = jeysonDatabase.respuestas_de_apoyo;
-  const fallback = jeysonDatabase.fallback?.respuesta;
+  if (/\b(gracias|te agradezco)\b/.test(t)) {
+    return "Aquí estoy para conversar contigo. 💚";
+  }
 
-  return (
-    chooseAnswer(support, "apoyo") ||
-    fallback ||
-    "Te escucho. 💚 Cuéntame un poco más para entender lo que quieres decirte."
-  );
+  return jeysonChooseAnswer(
+    jeysonDatabase.respuestas_de_apoyo,
+    "apoyo"
+  ) || jeysonDatabase.fallback?.respuesta ||
+    "Te escucho. 💚 Cuéntame un poco más para entenderte.";
 }
-
-/* ---------- MOSTRAR MENSAJES ---------- */
 
 function addBubble(text, who) {
   const messages = $("chat-messages");
-
-  if (!messages) {
-    console.warn("No se encontró el elemento chat-messages.");
-    return;
-  }
+  if (!messages) return;
 
   const bubble = document.createElement("div");
-
   bubble.className = "bubble " + who;
   bubble.textContent = text;
   bubble.style.whiteSpace = "pre-wrap";
@@ -332,18 +241,14 @@ function addBubble(text, who) {
   messages.scrollTop = messages.scrollHeight;
 }
 
-/* ---------- CONECTAR EL FORMULARIO ---------- */
-
-function initializeJeysonChat() {
+function initializeJeysonLocalChat() {
   const form = $("chat-form");
 
-  if (!form || form.dataset.jeysonReady === "true") {
-    return;
-  }
+  if (!form || form.dataset.localChatReady === "true") return;
 
-  form.dataset.jeysonReady = "true";
+  form.dataset.localChatReady = "true";
 
-  form.addEventListener("submit", async (event) => {
+  form.addEventListener("submit", event => {
     event.preventDefault();
 
     const input = $("chat-input");
@@ -352,7 +257,6 @@ function initializeJeysonChat() {
     if (!input) return;
 
     const message = input.value.trim();
-
     if (!message) return;
 
     addBubble(message, "user");
@@ -361,22 +265,17 @@ function initializeJeysonChat() {
     if (button) button.disabled = true;
 
     try {
-      const reply = getLocalReply(message);
-      addBubble(reply, "bot");
+      addBubble(jeysonLocalReply(message), "bot");
 
-      const status = $("chat-status");
-
-      if (status) {
-        status.textContent = jeysonDatabase
-          ? "Modo local activo · JEYSON está conversando 💚"
-          : "Esperando que cargue respuestas.json…";
+      if ($("chat-status")) {
+        $("chat-status").textContent =
+          "Modo local activo · JEYSON está conversando 💚";
       }
     } catch (error) {
-      console.error("Error en el chat de JEYSON:", error);
+      console.error("Error en el chat local:", error);
 
       addBubble(
-        "Tuve un pequeño problema al preparar la respuesta. " +
-        "Intenta escribirme otra vez. 💚",
+        "Tuve un problema al preparar la respuesta. Inténtalo otra vez. 💚",
         "bot"
       );
     } finally {
@@ -385,15 +284,5 @@ function initializeJeysonChat() {
   });
 }
 
-/* ---------- INICIO ---------- */
-
-function startJeyson() {
-  initializeJeysonChat();
-  loadJeysonDatabase();
-}
-
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", startJeyson);
-} else {
-  startJeyson();
-}
+initializeJeysonLocalChat();
+loadJeysonDatabase();
